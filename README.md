@@ -1,15 +1,14 @@
 # lamb-boiler
 
-A Leiningen template for starting new AWS Lambda function implemented in Clojure.
-This templates goal is not to provide an opinionated "batteries included" project,
-but instead aims to provide the fundamentals:
+A Leiningen template for starting new AWS Lambda functions implemented in Clojure.
+This template handles:
 
 - Java interop boilerplate
 - CloudWatch compatible logging using Log4j
-- JSON event to Clojure map conversion
-- Helpful environment variable handling for both local and production environments
 - [Component](https://github.com/stuartsierra/component) based architecture
 - [Reloaded development workflow](http://thinkrelevance.com/blog/2013/06/04/clojure-workflow-reloaded)
+- Event stubs for testing locally
+- Environment variable handling via [environ](https://github.com/weavejester/environ)
 
 ## Template Usage
 
@@ -22,6 +21,8 @@ lein new lamb-boiler hello-lambda
 ```
 
 ## Project Usage
+
+### Quick Start
 
 Run `lein repl`. Then, to get a fresh system:
 
@@ -37,14 +38,14 @@ user=> (execute)
 
 ### Overview
 
-You'll find the entry point of the template in the `project-name/core` namespace. Here,
-we implement a `-handle` function that is the main entry point for AWS Lambda. Within
+You'll find the entry point of the template in the `project-name.core` namespace. Here,
+we generate a class that implements the `-handle` function, which is the main entry point for AWS Lambda. Within
 that function, we log out a helpful message, parse the event map, and bootstrap the
-system. The initialized system is then passed into the `Handler` component's `execute`
-function to perform..._something!_ That's up to you. We cover the `Handler` component shortly.
+system. With the system initialized, we extract the `Handler` component, and call its
+`execute` function to..._do something!_. That part is up to you.
 
 You can find detailed information on the anatomy of this `-handle` function by visiting
-[Amazon's Lambda Function Handler (Java)](http://docs.aws.amazon.com/lambda/latest/dg/java-programming-model-handler-types.html)
+[Amazon's Lambda Function Handler for Java](http://docs.aws.amazon.com/lambda/latest/dg/java-programming-model-handler-types.html)
 documentation. In fact, you may find many of the Lambda articles for Java to be helpful to you
 when trying to understand various interop scenarios.
 
@@ -56,9 +57,8 @@ I have found that this workflow is incredibly powerful in the context of [the co
 that AWS uses to run Lambda functions. If you're unfamiliar with these ideas, consider them required reading.
 
 When you run `lein repl`, you will be loaded into the `user` namespace by default. This namespace is augmented
-by the `dev/user.clj` file, which you can edit to create more development functions for yourself _(note this file is only
-loaded in development)_. This file is where you can set up your test system, including stubbing out
-an event map to be passed into the Lambda function.
+by the `dev/user.clj` file, which contains all sorts of helpers and stubs useful at development time _(this
+file isn't loaded in production)_.
 
 The `user/reset` function is the bread and butter of the reloaded workflow, and is included
 in the `dev/user.clj` file. When invoked at the repl, it will:
@@ -68,10 +68,9 @@ in the `dev/user.clj` file. When invoked at the repl, it will:
 3. Restart all the system's components
 
 Your repl-driven workflow will entail: exercising functions at the repl, making some code changes,
-running `(reset)`, repeat. The `user/execute` helper function is also useful for quickly running the Lambda
-function.
+running `(reset)`, and repeat. 
 
-#### Included Components and Beyond
+### Included Components and Beyond
 
 This template comes with two components pre-configured:
 
@@ -106,21 +105,19 @@ Logging is handled by `Log4j` augmented with the [AWS Lambda custom appender](ht
 and is completely handled for you. You're free to make calls to the `log/*` family of functions documented in 
 [tools.logging](http://clojure.github.io/tools.logging/) and they will show up in your CloudWatch logs.
 
-You can change the log level within the `resources/log4j.properties` file:
+You can change the log level within the `resources/log4j.properties` file. For example,
+you could replace `INFO` with `DEBUG` like so:
 
 ```
 log = .
-log4j.rootLogger = INFO, LAMBDA
-                   ^
-                   |------ Change this to DEBUG, for example
-
+log4j.rootLogger = DEBUG, LAMBDA
 ...
 ```
 
 ### JSON Event Map
 
-Lambda functions are invoked with an event map, usually formatted as a JSON file. This event map contains
-any information relevant to the event that triggered the Lambda (CloudWatch scheduled event, S3 object changed, etc.)
+Lambda functions are invoked with an event map, usually formatted as JSON. This event map contains
+any information relevant to the event that triggered the Lambda (CloudWatch scheduled event, S3 object changed, etc).
 When you create a Lambda function in the Java programming language, this event map is passed as an
 instance of `java.util.LinkedHashMap`. Clojure, being hosted in the JVM, is no different.
 To make working with this map more idiomatic, it gets immediately converted into a basic 
@@ -166,8 +163,9 @@ other than `project-name.core`, the place where components are actually created.
                           :option2 (get config-options :option2 :other-default})
 ```
 
-Now when you invoke `example-component`, you can pass in the `env` map provided by `environ`
-and cherry-pick exactly what you need to configure and start that component.
+Now when you invoke `example-component`, you can pass the `env` map provided by environ as its
+config options. Within the factory function, you can cherry-pick exactly what the component
+needs from the environment.
 
 There are many strategies for working with environment variables during development, and this template
 leaves that choice up to you. You might keep them in an `environment.txt` file, and `source environment.txt`
@@ -179,12 +177,11 @@ you might handle this. Either way, **be careful not to check sensitive informati
 
 This is more of a "bonus" tidbit, but keep in mind that the `/tmp` directory is fair game for caching valuable resources
 between Lambda invocations. As noted in the [container model](http://docs.aws.amazon.com/lambda/latest/dg/lambda-introduction.html)
-docs, a Lambda's encompassing container can be "frozen" as an optimization measure, and the `/tmp/` directory stays in-tact.
+docs, a Lambda's encompassing container can be "frozen" as an optimization measure, and the `/tmp` directory stays in-tact.
 You can use this to your advantage to, for example, cache auth tokens or other useful data.
 
 ## License
 
 Copyright © 2017 Calvin Sauer
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Distributed under the Eclipse Public License version 1.0

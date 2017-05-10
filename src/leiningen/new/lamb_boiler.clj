@@ -1,15 +1,15 @@
-(ns leiningen.new.lamb-boiler
+(ns leiningen.new.lamb-plate
   "Generate an AWS Lambda Clojure project."
   (:require [leiningen.new.templates :refer [renderer year date project-name
                                              ->files sanitize-ns name-to-path
                                              multi-segment]]
             [leiningen.core.main :as main]))
 
-(defn lamb-boiler
+(defn lamb-plate
   "A general project for creating AWS Lambda functions with Clojure.
-  Accepts a group id in the project name: `lein new lamb-boiler foo.bar/baz`"
+  Accepts a group id in the project name: `lein new lamb-plate foo.bar/baz`"
   [name]
-  (let [render (renderer "lamb-boiler")
+  (let [render (renderer "lamb-plate")
         main-ns (multi-segment (sanitize-ns name))
         data {:raw-name name
               :name (project-name name)
@@ -17,7 +17,7 @@
               :nested-dirs (name-to-path name)
               :year (year)
               :date (date)}]
-    (main/info "Generating a project called" name "based on the 'lamb-boiler' template.")
+    (main/info "Generating a project called" name "based on the 'lamb-plate' template.")
     (main/info "This template is intended for AWS Lambda projects.")
     (->files data
              ["project.clj" (render "project.clj" data)]

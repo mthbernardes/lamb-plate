@@ -1,4 +1,4 @@
-# lamb-boiler
+# lamb-plate
 
 A Leiningen template for starting new AWS Lambda functions implemented in Clojure.
 This template handles:
@@ -17,7 +17,7 @@ Make sure you have the [latest version of Leiningen installed](https://github.co
 Then, to create a project called `hello-lambda`:
 
 ```
-lein new lamb-boiler hello-lambda
+lein new lamb-plate hello-lambda
 ```
 
 ## Project Usage

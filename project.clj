@@ -1,4 +1,4 @@
-(defproject lamb-plate/lein-template "0.1.0"
+(defproject lamb-plate/lein-template "0.2.0"
   :description "Lein template for starting a new AWS Lambda function implemented in Clojure."
   :url "https://github.com/cjsauer/lamb-plate"
   :license {:name "Eclipse Public License"
